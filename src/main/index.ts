@@ -17,7 +17,8 @@ function createWindow(): void {
       : {}),
     webPreferences: {
       preload: path.join(__dirname, '../preload/index.js'),
-      sandbox: false
+      sandbox: false,
+      nodeIntegrationInWorker: true
     }
   })
   mainWindow.on('ready-to-show', () => {
@@ -57,7 +58,6 @@ app.whenReady().then(() => {
       mic.pause()
     }
   })
-
   // Default open or close DevTools by F12 in development
   // and ignore CommandOrControl + R in production.
   // see https://github.com/alex8088/electron-toolkit/tree/master/packages/utils
