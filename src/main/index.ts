@@ -12,7 +12,7 @@ const MODEL_PATH =
 // LOGGER
 const logDir = path.join(__dirname, '../../logs')
 // const baseDir = path.join(__dirname, '../../')
-const logfile = path.join(logDir, `${new Date().toTimeString()}.log`)
+const logfile = path.join(logDir, `${new Date().getTime()}.log`)
 
 if (ENABLE_VOICE_LOGGING && !fs.existsSync(logDir)) {
   fs.mkdirSync(logDir, { recursive: true })
@@ -57,10 +57,14 @@ function createWindow(): void {
       if (res.length) {
         // console.log(`Accepted: ${res}`)
         if (ENABLE_VOICE_LOGGING) {
-          fs.appendFileSync(logfile, `Voice Accepted: ${res}\n`, { encoding: 'utf8' })
-          const log = fs.readFileSync(logfile, { encoding: 'utf8' }).split('\n').reverse()
-          log.slice(0, 5)
-          mainWindow.webContents.send('voice-log-update', log.slice(0, 5).reverse())
+          fs.appendFile(logfile, `Voice Accepted: ${res}\n`, { encoding: 'utf8' }, (err) => {
+            if (err) return
+            fs.readFile(logfile, { encoding: 'utf8' }, (err, data) => {
+              if (err) return
+              const log = data.split('\n').reverse()
+              mainWindow.webContents.send('voice-log-update', log.slice(0, 5).reverse())
+            })
+          })
         }
       }
     } else {
