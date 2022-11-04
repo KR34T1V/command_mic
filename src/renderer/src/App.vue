@@ -13,7 +13,7 @@
     <div class="linefeed-wrapper">
       <h3>Voice Log:</h3>
       <div class="linefeed-text">
-        <p v-for="(line, index) in voiceLineStream" :key="index">{{ line }}</p>
+        <p v-for="(line, index) in voiceLog" :key="index">{{ line }}</p>
       </div>
     </div>
   </div>
@@ -39,16 +39,7 @@ export default defineComponent({
       micEnabled: false,
       modelLocation: '',
       lastVoiceline: '',
-      voiceLineStream: [
-        'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Donec rhoncus.',
-        'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Donec rhoncus.',
-        'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Donec rhoncus.',
-        'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Donec rhoncus.',
-        'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Donec rhoncus.',
-        'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Donec rhoncus.',
-        'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Donec rhoncus.',
-        'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Donec rhoncus.'
-      ]
+      voiceLog: []
     })
     return { ...toRefs(state) }
   },
@@ -62,6 +53,10 @@ export default defineComponent({
       if (this.micEnabled) {
         window.api.voicelineUpdate((event, value) => {
           if (value && value.length) this.lastVoiceline = value
+        })
+        window.api.updateVoiceLog((event, value) => {
+          console.log(value)
+          if (value && value.length) this.voiceLog = value
         })
       }
     }

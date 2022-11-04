@@ -5,7 +5,8 @@ const api = {
   enableMic: (bool): void => {
     ipcRenderer.send('enable-mic', bool)
   },
-  voicelineUpdate: (callback): IpcRenderer => ipcRenderer.on('voiceline-update', callback)
+  voicelineUpdate: (callback): IpcRenderer => ipcRenderer.on('voiceline-update', callback),
+  updateVoiceLog: (callback): IpcRenderer => ipcRenderer.on('voice-log-update', callback)
 }
 
 // Use `contextBridge` APIs to expose Electron APIs to

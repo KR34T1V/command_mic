@@ -1,13 +1,25 @@
 import { app, shell, BrowserWindow, ipcMain } from 'electron'
 import * as path from 'path'
+import fs from 'fs'
 import { electronApp, optimizer, is } from '@electron-toolkit/utils'
 import vosk from 'vosk'
 import { getMicInputDevice, loadModel } from './voice'
-
+const ENABLE_VOICE_LOGGING = true
 const SAMPLE_RATE = 16000
 const MODEL_PATH =
   '/home/kr34t1v/Desktop/work/command_mic/voice-models/vosk-model-en-us-0.22-lgraph'
 
+// LOGGER
+const logDir = path.join(__dirname, '../../logs')
+// const baseDir = path.join(__dirname, '../../')
+const logfile = path.join(logDir, `${new Date().toTimeString()}.log`)
+
+if (ENABLE_VOICE_LOGGING && !fs.existsSync(logDir)) {
+  fs.mkdirSync(logDir, { recursive: true })
+}
+// if (!fs.existsSync(baseDir)) {
+//   fs.appendFileSync(baseDir)
+// }
 const model = loadModel(MODEL_PATH)
 if (!model) throw 'No Voice Model Found'
 const rec = new vosk.Recognizer({ model: model, sampleRate: SAMPLE_RATE })
@@ -42,10 +54,22 @@ function createWindow(): void {
   micInputStream.on('data', (data) => {
     if (rec.acceptWaveform(data)) {
       const res = rec.result().text
-      console.log(res)
-      mainWindow.webContents.send('voiceline-update', res)
+      if (res.length) {
+        // console.log(`Accepted: ${res}`)
+        if (ENABLE_VOICE_LOGGING) {
+          fs.appendFileSync(logfile, `Voice Accepted: ${res}\n`, { encoding: 'utf8' })
+          const log = fs.readFileSync(logfile, { encoding: 'utf8' }).split('\n').reverse()
+          log.slice(0, 5)
+          mainWindow.webContents.send('voice-log-update', log.slice(0, 5).reverse())
+        }
+      }
+    } else {
+      const partial = rec.partialResult().partial
+      if (partial.length) {
+        console.log(partial)
+        mainWindow.webContents.send('voiceline-update', partial)
+      }
     }
-    // else console.log(rec.partialResult().text)
   })
 
   micInputStream.on('audioProcessExitComplete', function () {
