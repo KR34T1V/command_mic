@@ -1,7 +1,20 @@
 import { app, shell, BrowserWindow, ipcMain } from 'electron'
 import * as path from 'path'
 import { electronApp, optimizer, is } from '@electron-toolkit/utils'
-import mic from './voice'
+import vosk from 'vosk'
+import { getMicInputDevice, loadModel } from './voice'
+
+const SAMPLE_RATE = 16000
+const MODEL_PATH =
+  '/home/kr34t1v/Desktop/work/command_mic/voice-models/vosk-model-en-us-0.22-lgraph'
+
+const model = loadModel(MODEL_PATH)
+if (!model) throw 'No Voice Model Found'
+const rec = new vosk.Recognizer({ model: model, sampleRate: SAMPLE_RATE })
+const mic = getMicInputDevice(SAMPLE_RATE)
+mic.start()
+mic.pause()
+const micInputStream = mic.getAudioStream()
 
 function createWindow(): void {
   // Create the browser window.
@@ -19,6 +32,35 @@ function createWindow(): void {
       preload: path.join(__dirname, '../preload/index.js'),
       sandbox: false,
       nodeIntegrationInWorker: true
+    }
+  })
+
+  //SETUP STUFF HERE
+
+  // VOICE AND RECOGNITION SETUP
+
+  micInputStream.on('data', (data) => {
+    if (rec.acceptWaveform(data)) {
+      const res = rec.result().text
+      console.log(res)
+      mainWindow.webContents.send('voiceline-update', res)
+    }
+    // else console.log(rec.partialResult().text)
+  })
+
+  micInputStream.on('audioProcessExitComplete', function () {
+    console.log('Cleaning up')
+    console.log(rec.finalResult())
+    rec.free()
+    model.free()
+  })
+
+  ipcMain.on('enable-mic', (event, data) => {
+    console.log('Microphone', data ? 'Enabled' : 'Disabled')
+    if (data) {
+      mic.resume()
+    } else {
+      mic.pause()
     }
   })
   mainWindow.on('ready-to-show', () => {
@@ -45,19 +87,6 @@ function createWindow(): void {
 app.whenReady().then(() => {
   // Set app user model id for windows
   electronApp.setAppUserModelId('com.electron')
-  //SETUP STUFF HERE
-
-  mic.start()
-  mic.pause()
-
-  ipcMain.on('enable-mic', (event, data) => {
-    console.log('Microphone', data ? 'Enabled' : 'Disabled')
-    if (data) {
-      mic.resume()
-    } else {
-      mic.pause()
-    }
-  })
   // Default open or close DevTools by F12 in development
   // and ignore CommandOrControl + R in production.
   // see https://github.com/alex8088/electron-toolkit/tree/master/packages/utils

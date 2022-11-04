@@ -1,10 +1,11 @@
-import { contextBridge, ipcRenderer } from 'electron'
+import { contextBridge, IpcRenderer, ipcRenderer } from 'electron'
 import { electronAPI } from '@electron-toolkit/preload'
 // Custom APIs for renderer
 const api = {
   enableMic: (bool): void => {
     ipcRenderer.send('enable-mic', bool)
-  }
+  },
+  voicelineUpdate: (callback): IpcRenderer => ipcRenderer.on('voiceline-update', callback)
 }
 
 // Use `contextBridge` APIs to expose Electron APIs to

@@ -7,7 +7,7 @@
     <div class="linefeed-wrapper">
       <h3>Last Match:</h3>
       <div class="linefeed-text">
-        <span>hallo</span>
+        <span>{{ lastVoiceline }}</span>
       </div>
     </div>
     <div class="linefeed-wrapper">
@@ -29,6 +29,7 @@
 import { defineComponent, reactive, toRefs } from 'vue'
 import CommandsTable from './components/CommandsTable.vue'
 import VoiceTriggersTable from './components/VoiceTriggersTable.vue'
+
 export default defineComponent({
   name: 'App',
   components: { CommandsTable, VoiceTriggersTable },
@@ -37,6 +38,7 @@ export default defineComponent({
     const state = reactive({
       micEnabled: false,
       modelLocation: '',
+      lastVoiceline: '',
       voiceLineStream: [
         'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Donec rhoncus.',
         'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Donec rhoncus.',
@@ -57,6 +59,11 @@ export default defineComponent({
     toggleMic() {
       this.micEnabled = !this.micEnabled
       window.api.enableMic(this.micEnabled)
+      if (this.micEnabled) {
+        window.api.voicelineUpdate((event, value) => {
+          if (value && value.length) this.lastVoiceline = value
+        })
+      }
     }
   }
 })
