@@ -10,6 +10,9 @@
         :key="index"
         :class="index % 2 ? 'table-row even' : 'table-row odd'"
       >
+        <td style="width: 0%">
+          <button @click="selectRow(index)">{{ selectedRow === index ? 'Save' : 'Select' }}</button>
+        </td>
         <td>
           <input v-model="row.name" type="text" placeholder="Command Name" />
         </td>
@@ -28,7 +31,8 @@ export default defineComponent({
 
   setup() {
     const state = reactive({
-      headers: ['Name', 'Keybinds'],
+      selectedRow: null,
+      headers: ['Name', 'Keybinds', 'Actions'],
       tableData: [
         { name: 'Name', keybinds: 'Keybind' },
         { name: 'Name', keybinds: 'Keybind' },
@@ -42,6 +46,15 @@ export default defineComponent({
       // age: 25 as string | number
     })
     return { ...toRefs(state) }
+  },
+  methods: {
+    selectRow(row) {
+      if (this.selectRow === row) {
+        this.selectedRow = null
+      } else {
+        this.selectedRow = row
+      }
+    }
   }
 })
 </script>

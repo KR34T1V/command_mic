@@ -1,9 +1,10 @@
+import { electronApp, optimizer, is } from '@electron-toolkit/utils'
 import { app, shell, BrowserWindow, ipcMain } from 'electron'
+import { getMicInputDevice, loadModel } from './voice'
 import * as path from 'path'
 import fs from 'fs'
-import { electronApp, optimizer, is } from '@electron-toolkit/utils'
 import vosk from 'vosk'
-import { getMicInputDevice, loadModel } from './voice'
+
 const ENABLE_VOICE_LOGGING = true
 const SAMPLE_RATE = 16000
 const MODEL_PATH =
